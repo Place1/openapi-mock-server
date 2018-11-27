@@ -44,6 +44,12 @@ paths:
       operationId: createPets
       tags:
         - pets
+      parameters:
+        - name: Pet
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/CreatePet'
       responses:
         "201":
           description: Null response
@@ -85,10 +91,23 @@ definitions:
         type: string
       tag:
         type: string
+      dateOfBirth:
+        type: string
+        format: date-time
+
   Pets:
     type: array
     items:
       $ref: '#/definitions/Pet'
+
+  CreatePet:
+    type: object
+    required:
+      - name
+    properties:
+      name:
+        type: string
+
   Error:
     required:
       - code

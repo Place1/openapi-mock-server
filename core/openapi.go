@@ -39,12 +39,12 @@ func NewStubGenerator(urlOrPath string) (*StubGenerator, error) {
 // StubResponse returns data that matches the schema for a given Operation
 // in the OpenAPI spec. The Operation is determined by a path and method
 func (stub *StubGenerator) StubResponse(path string, method string) (interface{}, error) {
-	operation, err := FindOperation(stub.spec, path, method)
+	operation, err := stub.FindOperation(path, method)
 	if err != nil {
 		return nil, errors.Wrap(err, "finding operation from path and method")
 	}
 
-	response, err := FindResponse(operation)
+	response, err := stub.FindResponse(operation)
 	if err != nil {
 		return nil, errors.Wrap(err, "finding response for operation")
 	}
@@ -54,10 +54,10 @@ func (stub *StubGenerator) StubResponse(path string, method string) (interface{}
 
 // FindOperation returns the best matching OpenAPI operation
 // from the Spec given an HTTP Request
-func FindOperation(openAPISpec *spec.Swagger, httpPath string, httpMethod string) (*spec.Operation, error) {
+func (stub *StubGenerator) FindOperation(httpPath string, httpMethod string) (*spec.Operation, error) {
 	// for every path, calculate a match score (most specific wins)
 	scores := make(map[string]int)
-	for path := range openAPISpec.Paths.Paths {
+	for path := range stub.spec.Paths.Paths {
 		matcher := pathToRegexp(httpPath)
 		matches := matcher.FindAllString(path, -1)
 		scores[path] = len(matches)
@@ -82,17 +82,17 @@ func FindOperation(openAPISpec *spec.Swagger, httpPath string, httpMethod string
 	var operation *spec.Operation
 	switch strings.ToUpper(httpMethod) {
 	case "GET":
-		operation = openAPISpec.Paths.Paths[*bestPath].Get
+		operation = stub.spec.Paths.Paths[*bestPath].Get
 	case "POST":
-		operation = openAPISpec.Paths.Paths[*bestPath].Post
+		operation = stub.spec.Paths.Paths[*bestPath].Post
 	case "PUT":
-		operation = openAPISpec.Paths.Paths[*bestPath].Put
+		operation = stub.spec.Paths.Paths[*bestPath].Put
 	case "PATCH":
-		operation = openAPISpec.Paths.Paths[*bestPath].Patch
+		operation = stub.spec.Paths.Paths[*bestPath].Patch
 	case "HEAD":
-		operation = openAPISpec.Paths.Paths[*bestPath].Head
+		operation = stub.spec.Paths.Paths[*bestPath].Head
 	case "OPTIONS":
-		operation = openAPISpec.Paths.Paths[*bestPath].Options
+		operation = stub.spec.Paths.Paths[*bestPath].Options
 	default:
 		operation = nil
 	}
@@ -114,16 +114,13 @@ func pathToRegexp(path string) *regexp.Regexp {
 
 // FindResponse returns either the default response from an operation
 // or the response with the lowest HTTP status code (i.e. success codes over error codes)
-func FindResponse(operation *spec.Operation) (*spec.Response, error) {
+func (stub *StubGenerator) FindResponse(operation *spec.Operation) (*spec.Response, error) {
 	var response *spec.Response
-	if operation.Responses.Default != nil {
-		response = operation.Responses.Default
-	} else {
-		lowestCode := 999
-		for code, res := range operation.Responses.StatusCodeResponses {
-			if code < lowestCode {
-				response = &res
-			}
+
+	lowestCode := 999
+	for code, res := range operation.Responses.StatusCodeResponses {
+		if code < lowestCode {
+			response = &res
 		}
 	}
 
@@ -132,4 +129,13 @@ func FindResponse(operation *spec.Operation) (*spec.Response, error) {
 	}
 
 	return response, nil
+}
+
+func FindBodyParam(operation *spec.Operation) (*spec.Parameter, error) {
+	for _, param := range operation.Parameters {
+		if param.In == "body" {
+			return &param, nil
+		}
+	}
+	return nil, fmt.Errorf("no body parameter for %v", operation.ID)
 }

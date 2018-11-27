@@ -9,10 +9,12 @@ require (
 	github.com/go-openapi/jsonpointer v0.17.2 // indirect
 	github.com/go-openapi/jsonreference v0.17.2 // indirect
 	github.com/go-openapi/loads v0.17.2
+	github.com/go-openapi/runtime v0.17.2 // indirect
 	github.com/go-openapi/spec v0.17.2
-	github.com/go-openapi/strfmt v0.17.2 // indirect
+	github.com/go-openapi/strfmt v0.17.2
 	github.com/go-openapi/stubs v0.0.0-20170429194734-98bff229fc7b // indirect
 	github.com/go-openapi/swag v0.17.2 // indirect
+	github.com/go-openapi/validate v0.17.2
 	github.com/google/uuid v1.1.0 // indirect
 	github.com/manveru/faker v0.0.0-20171103152722-9fbc68a78c4d // indirect
 	github.com/pkg/errors v0.8.0
