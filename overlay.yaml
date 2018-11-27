@@ -1,0 +1,9 @@
+paths:
+  /pets/{petId}:
+    get:
+      responses:
+        200:
+          content: |
+            {
+              "surprise": "new content"
+            }

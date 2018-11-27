@@ -10,15 +10,21 @@ import (
 	"github.com/pkg/errors"
 )
 
+// StubGeneratorOptions that can configure the stub generator
+type StubGeneratorOptions struct {
+	Overlay *string
+}
+
 // StubGenerator is the main type used to interact with this
 // library's feature set
 type StubGenerator struct {
-	spec *spec.Swagger
+	spec    spec.Swagger
+	overlay Overlay
 }
 
 // NewStubGenerator loads an OpenAPI spec from the given url/path
 // and returns a StubGenerator
-func NewStubGenerator(urlOrPath string) (*StubGenerator, error) {
+func NewStubGenerator(urlOrPath string, options StubGeneratorOptions) (*StubGenerator, error) {
 	document, err := loads.Spec(urlOrPath)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to load input file")
@@ -29,8 +35,20 @@ func NewStubGenerator(urlOrPath string) (*StubGenerator, error) {
 		return nil, errors.Wrap(err, "expanding spec refs")
 	}
 
+	var overlay *Overlay
+	if options.Overlay != nil && *options.Overlay != "" {
+		overlay, err = LoadOverlayFile(*options.Overlay)
+		if err != nil {
+			return nil, errors.Wrap(err, "loading overlay")
+		}
+	} else {
+		tmp := EmptyOverlay()
+		overlay = &tmp
+	}
+
 	stub := &StubGenerator{
-		spec: document.Spec(),
+		spec:    *document.Spec(),
+		overlay: *overlay,
 	}
 
 	return stub, nil
