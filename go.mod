@@ -16,6 +16,7 @@ require (
 	github.com/go-openapi/swag v0.17.2 // indirect
 	github.com/go-openapi/validate v0.17.2
 	github.com/google/uuid v1.1.0 // indirect
+	github.com/imdario/mergo v0.3.6
 	github.com/manveru/faker v0.0.0-20171103152722-9fbc68a78c4d // indirect
 	github.com/pkg/errors v0.8.0
 	github.com/spf13/cobra v0.0.3

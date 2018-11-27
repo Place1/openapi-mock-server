@@ -67,7 +67,34 @@ func (stub *StubGenerator) StubResponse(path string, method string) (interface{}
 		return nil, errors.Wrap(err, "finding response for operation")
 	}
 
-	return StubSchema(response.Schema), nil
+	stubbedData := StubSchema(response.Schema)
+
+	for pathOverlay, pathItem := range stub.overlay.Paths {
+		if pathOverlay == path {
+			var operationOverlay *Operation
+			switch method {
+			case "GET":
+				operationOverlay = pathItem.Get
+			case "POST":
+				operationOverlay = pathItem.Post
+			case "PUT":
+				operationOverlay = pathItem.Put
+			case "PATCH":
+				operationOverlay = pathItem.Patch
+			case "OPTIONS":
+				operationOverlay = pathItem.Options
+			case "HEAD":
+				operationOverlay = pathItem.Head
+			}
+			if operationOverlay != nil {
+				// TODO: handle response code correctly. It needs to match the
+				// selected code from FindOperation.
+				ApplyResponseOverlay(operationOverlay.Responses[200], &stubbedData)
+			}
+		}
+	}
+
+	return stubbedData, nil
 }
 
 // FindOperation returns the best matching OpenAPI operation
