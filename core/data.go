@@ -1,9 +1,11 @@
 package core
 
 import (
+	"encoding/base64"
 	"fmt"
 	"log"
 	"math/rand"
+	"time"
 
 	"github.com/go-openapi/spec"
 )
@@ -18,16 +20,17 @@ func StubSchema(schema *spec.Schema) interface{} {
 		return arrayStub(schema)
 
 	} else if schema.Type.Contains("string") {
-		return stringStub()
+		return stringStub(schema)
 
 	} else if schema.Type.Contains("number") {
-		return 10
+		return numberStub()
 
 	} else if schema.Type.Contains("integer") {
-		return 10
+		return integerStub()
 
 	} else if schema.Type.Contains("boolean") {
 		return true
+
 	} else if len(schema.Properties) != 0 {
 		// there was no `type` field on the schema
 		// but there were `properties`.
@@ -53,21 +56,27 @@ func arrayStub(schema *spec.Schema) []interface{} {
 	return items
 }
 
-func stringStub() string {
-	values := []string{
-		"lorem",
-		"ipsum",
-		"hello world",
+func stringStub(schema *spec.Schema) interface{} {
+	switch schema.Format {
+	case "date":
+		return time.Now().Format("2006-01-02")
+	case "date-time":
+		return time.Now().Format(time.RFC3339)
+	case "byte":
+		return base64.StdEncoding.EncodeToString([]byte(FakeString()))
+	case "binary":
+		return []byte(FakeString())
+	default:
+		return FakeString()
 	}
-	return values[randInt(0, len(values)-1)]
 }
 
 func integerStub() int {
-	return randInt(-1000, 1000)
+	return randInt(0, 100)
 }
 
 func numberStub() float32 {
-	return rand.Float32() * 1000
+	return rand.Float32() * 100
 }
 
 func booleanStub() bool {

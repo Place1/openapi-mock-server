@@ -1,14 +1,14 @@
 package main
 
 import (
-	"openapimockserver/runtime"
+	"openapimockserver/core"
 	"testing"
 
 	"github.com/pkg/errors"
 )
 
 func TestStubResponse(t *testing.T) {
-	stub, err := runtime.NewStubGenerator("./petstore.yaml")
+	stub, err := core.NewStubGenerator("./petstore.yaml")
 	if err != nil {
 		t.Fatal(errors.Wrap(err, "creating stub generator"))
 	}
