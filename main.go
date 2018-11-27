@@ -1,21 +1,22 @@
 package main
 
 import (
-	"fmt"
 	"log"
-	"openapimockserver/runtime"
+	"openapimockserver/core"
+	"openapimockserver/server"
 )
 
 func main() {
-	stub, err := runtime.NewStubGenerator("./petstore.yaml")
+	stub, err := core.NewStubGenerator("./petstore.yaml")
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	data, err := stub.StubResponse("/pets", "GET")
-	if err != nil {
-		log.Fatalln(err)
-	}
+	server := server.OpenAPIStubServer(stub, &server.Options{
+		Host: "127.0.0.1",
+		Port: 8000,
+	})
 
-	fmt.Println(data)
+	log.Println("listening on :8000")
+	log.Fatalln(server.ListenAndServe())
 }

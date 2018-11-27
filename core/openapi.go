@@ -1,4 +1,4 @@
-package runtime
+package core
 
 import (
 	"fmt"
@@ -64,9 +64,11 @@ func FindOperation(openAPISpec *spec.Swagger, httpPath string, httpMethod string
 	}
 
 	// pick the best matching path
+	// a lower score means less matching segments and a more specific path.
+	// we'll choose the most specific path
 	var bestPath *string
 	for path, score := range scores {
-		if score != 0 && (bestPath == nil || scores[*bestPath] < score) {
+		if score != 0 && (bestPath == nil || score < scores[*bestPath]) {
 			copy := string(path)
 			bestPath = &copy
 		}
