@@ -16,11 +16,6 @@ func main() {
 
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
-			Name:  "lang",
-			Value: "english",
-			Usage: "language for the greeting",
-		},
-		cli.StringFlag{
 			Name:  "host",
 			Value: "127.0.0.1",
 			Usage: "the host or ip address that the server should listen on",
@@ -35,26 +30,27 @@ func main() {
 			Value: "",
 			Usage: "path to an overlay.yaml file",
 		},
+		cli.StringFlag{
+			Name:  "base-path",
+			Value: "",
+			Usage: "override the basePath defined in the spec. defaults to the value defined in the spec.",
+		},
 	}
 
 	app.Action = func(context *cli.Context) error {
-		// if c.NArg() > 0 {
-		// 	name = c.Args().Get(0)
-		// }
-		// if c.String("lang") == "spanish" {
-		// 	fmt.Println("Hola", name)
-		// } else {
-		// 	fmt.Println("Hello", name)
-		// }
-		// return nil
-
 		openAPISpec := context.Args().First()
 		host := context.String("host")
 		port := context.Int("port")
 		overlay := context.String("overlay")
+		basePath := context.String("base-path")
+		log.Println(basePath)
+		if openAPISpec == "" {
+			log.Fatalln("missing positional argument <openapi-spec.yaml>")
+		}
 
 		stub, err := core.NewStubGenerator(openAPISpec, core.StubGeneratorOptions{
-			Overlay: &overlay,
+			Overlay:  overlay,
+			BasePath: basePath,
 		})
 		if err != nil {
 			log.Fatalln(err)

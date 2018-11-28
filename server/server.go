@@ -24,7 +24,7 @@ type Options struct {
 func OpenAPIStubServer(generator *core.StubGenerator, options *Options) *http.Server {
 
 	handler := createHandler(generator)
-	handler = validationMiddleware(handler, generator)
+	// handler = validationMiddleware(handler, generator)
 
 	server := &http.Server{
 		Addr:    fmt.Sprintf("%v:%v", options.Host, options.Port),
@@ -39,6 +39,7 @@ func createHandler(generator *core.StubGenerator) http.Handler {
 		response, err := generator.StubResponse(req.URL.Path, req.Method)
 		if err != nil {
 			log.Println(errors.Wrap(err, "unable to stub response"))
+			http.Error(res, "stub server error - check the logs", http.StatusInternalServerError)
 			return
 		}
 
@@ -46,6 +47,7 @@ func createHandler(generator *core.StubGenerator) http.Handler {
 		err = json.NewEncoder(res).Encode(response)
 		if err != nil {
 			log.Println(errors.Wrap(err, "unable to serialize generated response stub"))
+			http.Error(res, "stub server error - check the logs", http.StatusInternalServerError)
 			return
 		}
 	})

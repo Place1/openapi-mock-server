@@ -2,6 +2,7 @@ package core
 
 import (
 	"fmt"
+	"path"
 	"regexp"
 	"strings"
 
@@ -12,7 +13,8 @@ import (
 
 // StubGeneratorOptions that can configure the stub generator
 type StubGeneratorOptions struct {
-	Overlay *string
+	Overlay  string
+	BasePath string
 }
 
 // StubGenerator is the main type used to interact with this
@@ -35,9 +37,15 @@ func NewStubGenerator(urlOrPath string, options StubGeneratorOptions) (*StubGene
 		return nil, errors.Wrap(err, "expanding spec refs")
 	}
 
+	// the openapi libraries suggest that the base path is
+	// prefixed to paths: https://godoc.org/github.com/go-openapi/spec#Paths
+	// but it doesn't seem to be happening in practice.
+	// we'll expand them here
+	ExpandPaths(document, options.BasePath)
+
 	var overlay *Overlay
-	if options.Overlay != nil && *options.Overlay != "" {
-		overlay, err = LoadOverlayFile(*options.Overlay)
+	if options.Overlay != "" {
+		overlay, err = LoadOverlayFile(options.Overlay)
 		if err != nil {
 			return nil, errors.Wrap(err, "loading overlay")
 		}
@@ -79,7 +87,8 @@ func (stub *StubGenerator) StubResponse(path string, method string) (interface{}
 // FindOperation returns the best matching OpenAPI operation
 // from the Spec given an HTTP Request
 func (stub *StubGenerator) FindOperation(httpPath string, httpMethod string) (*spec.Operation, error) {
-	// for every path, calculate a match score (most specific wins)
+	// for every path, calculate a match score
+	// more matching path params means a higher score, 1 point per matching path param
 	scores := make(map[string]int)
 	for path := range stub.spec.Paths.Paths {
 		matcher := pathToRegexp(httpPath)
@@ -144,7 +153,8 @@ func (stub *StubGenerator) FindResponse(operation *spec.Operation) (*spec.Respon
 	lowestCode := 999
 	for code, res := range operation.Responses.StatusCodeResponses {
 		if code < lowestCode {
-			response = &res
+			tmp := res
+			response = &tmp
 			lowestCode = code
 		}
 	}
@@ -163,4 +173,30 @@ func FindBodyParam(operation *spec.Operation) (*spec.Parameter, error) {
 		}
 	}
 	return nil, fmt.Errorf("no body parameter for %v", operation.ID)
+}
+
+// ExpandPaths modifies all the paths in the openapi document
+// by prefixing them with the basePath
+func ExpandPaths(document *loads.Document, basePath string) {
+	paths := map[string]spec.PathItem{}
+	if basePath == "" {
+		basePath = document.BasePath()
+	}
+	for apiPath, pathItem := range document.Spec().Paths.Paths {
+		expandedPath := applyBasePath(basePath, apiPath)
+		paths[expandedPath] = pathItem
+	}
+	document.Spec().Paths.Paths = paths
+}
+
+func applyBasePath(prefix string, suffix string) string {
+	joint := path.Join(prefix, suffix)
+	if strings.HasSuffix(suffix, "/") {
+		// path.Join will clean a trailing slash.
+		// some webservers actually care about the trailing slash
+		// and so we want to preserve the "trailing slash-ness"
+		// of the spec
+		joint += "/"
+	}
+	return joint
 }
