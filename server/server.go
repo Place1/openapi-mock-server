@@ -3,13 +3,10 @@ package server
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"openapimockserver/core"
 
-	"github.com/go-openapi/strfmt"
-	"github.com/go-openapi/validate"
 	"github.com/pkg/errors"
 )
 
@@ -64,30 +61,14 @@ func validationMiddleware(handler http.Handler, generator *core.StubGenerator) h
 				break
 			}
 
-			bodyParam, err := core.FindBodyParam(operation)
+			err = ValidateConsumes(*operation, *req)
 			if err != nil {
-				log.Println(errors.Wrap(err, "finding body parameter"))
-				break
+				log.Println(errors.Wrap(err, "validating content type header"))
 			}
 
-			body, err := ioutil.ReadAll(req.Body)
+			err = ValidateParameters(*operation, *req)
 			if err != nil {
-				log.Println(errors.Wrap(err, "reading response body"))
-				break
-			}
-
-			jsonValue := map[string]interface{}{}
-			err = json.Unmarshal(body, &jsonValue)
-			if err != nil {
-				log.Println(errors.Wrap(err, "decoding request body"))
-				break
-			}
-
-			// run the validation
-			err = validate.AgainstSchema(bodyParam.Schema, jsonValue, strfmt.Default)
-			if err != nil {
-				log.Println(errors.Wrapf(err, "%v: %v: %v", req.Method, req.URL.Path, string(body)))
-				break
+				log.Println(errors.Wrap(err, "validating parameters"))
 			}
 		}
 		handler.ServeHTTP(res, req)

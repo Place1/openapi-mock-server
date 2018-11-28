@@ -43,6 +43,8 @@ func NewStubGenerator(urlOrPath string, options StubGeneratorOptions) (*StubGene
 	// we'll expand them here
 	ExpandPaths(document, options.BasePath)
 
+	ExpandOperationIDs(document)
+
 	var overlay *Overlay
 	if options.Overlay != "" {
 		overlay, err = LoadOverlayFile(options.Overlay)
@@ -166,15 +168,6 @@ func (stub *StubGenerator) FindResponse(operation *spec.Operation) (*spec.Respon
 	return response, &lowestCode, nil
 }
 
-func FindBodyParam(operation *spec.Operation) (*spec.Parameter, error) {
-	for _, param := range operation.Parameters {
-		if param.In == "body" {
-			return &param, nil
-		}
-	}
-	return nil, fmt.Errorf("no body parameter for %v", operation.ID)
-}
-
 // ExpandPaths modifies all the paths in the openapi document
 // by prefixing them with the basePath
 func ExpandPaths(document *loads.Document, basePath string) {
@@ -199,4 +192,90 @@ func applyBasePath(prefix string, suffix string) string {
 		joint += "/"
 	}
 	return joint
+}
+
+// ExpandOperationIDs the operationId field can be omitted in
+// the spec. Codegen tools will automatically generate a default
+// value for this field but go-openapi does not.
+// ExpandOperationIDs will expand empty operationId fields into
+// a useful name for usage in error/logging.
+func ExpandOperationIDs(document *loads.Document) {
+	currentPathName := ""
+	Walk(document, "", func(node interface{}, key string) {
+		switch v := node.(type) {
+		case *spec.PathItem:
+			currentPathName = key
+
+		case *spec.Operation:
+			if v.ID == "" {
+				v.ID = fmt.Sprintf("%v: %v", key, currentPathName)
+			}
+		}
+	})
+}
+
+type DocumentVisitor func(node interface{}, key string)
+
+func Walk(node interface{}, key string, visitor DocumentVisitor) {
+	visitor(node, key)
+
+	switch v := node.(type) {
+	case *loads.Document:
+		Walk(v.Spec(), "", visitor)
+
+	case *spec.Swagger:
+		for apiPath, pathItem := range v.Paths.Paths {
+			Walk(&pathItem, apiPath, visitor)
+		}
+		for definitionName, schema := range v.Definitions {
+			Walk(&schema, definitionName, visitor)
+		}
+		for parameterName, parameter := range v.Parameters {
+			Walk(&parameter, parameterName, visitor)
+		}
+		for responseName, response := range v.Responses {
+			Walk(&response, responseName, visitor)
+		}
+
+	case *spec.PathItem:
+		if v.Get != nil {
+			Walk(v.Get, "Get", visitor)
+		}
+		if v.Post != nil {
+			Walk(v.Post, "Post", visitor)
+		}
+		if v.Put != nil {
+			Walk(v.Put, "Put", visitor)
+		}
+		if v.Patch != nil {
+			Walk(v.Patch, "Patch", visitor)
+		}
+		if v.Delete != nil {
+			Walk(v.Delete, "Delete", visitor)
+		}
+		if v.Options != nil {
+			Walk(v.Options, "Options", visitor)
+		}
+		if v.Head != nil {
+			Walk(v.Head, "Head", visitor)
+		}
+
+	case *spec.Operation:
+		for _, parameter := range v.Parameters {
+			Walk(&parameter, "", visitor)
+		}
+		for statusCode, response := range v.Responses.StatusCodeResponses {
+			Walk(&response, string(statusCode), visitor)
+		}
+
+	case *spec.Response:
+		if v.Schema != nil {
+			Walk(v.Schema, "", visitor)
+		}
+
+	case *spec.Parameter:
+		if v.Schema != nil {
+			Walk(v.Schema, "", visitor)
+		}
+	}
 }

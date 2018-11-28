@@ -3,6 +3,8 @@ package core
 import (
 	"testing"
 
+	"github.com/go-openapi/loads"
+
 	"github.com/stretchr/testify/require"
 )
 
@@ -37,4 +39,15 @@ func TestApplyResponseOverlayWithPrimatives(t *testing.T) {
 	require.NoError(err)
 
 	require.Equal("my override", data)
+}
+
+func TestExpandOperationIDs(t *testing.T) {
+	require := require.New(t)
+
+	document, err := loads.Spec("../petstore.yaml")
+	require.NoError(err)
+
+	ExpandOperationIDs(document)
+
+	require.Equal(document.Spec().Paths.Paths["/pets/{petId}"].Get.ID, "Get: /pets/{petId}")
 }
