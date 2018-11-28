@@ -4,69 +4,35 @@ import (
 	"log"
 	"openapimockserver/core"
 	"openapimockserver/server"
-	"os"
 
-	"github.com/urfave/cli"
+	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
 
 func main() {
-	app := cli.NewApp()
+	spec := kingpin.Arg("openapi-spec", "the path to an openapi spec yaml file").Required().String()
+	host := kingpin.Flag("host", "the host or ip address that the server should listen on.").Default("127.0.0.1").String()
+	port := kingpin.Flag("port", "the port that the server should listen on.").Default("8000").Int()
+	overlay := kingpin.Flag("overlay", "path to an overlay.yaml file.").Default("").String()
+	basePath := kingpin.Flag("base-path", "override the basePath defined in the spec. defaults to the value defined in the spec.").Default("").String()
+	kingpin.Parse()
 
-	app.Description = "An automatic server stub powered by OpenAPI and Go"
-
-	app.Flags = []cli.Flag{
-		cli.StringFlag{
-			Name:  "host",
-			Value: "127.0.0.1",
-			Usage: "the host or ip address that the server should listen on",
-		},
-		cli.IntFlag{
-			Name:  "port",
-			Value: 8000,
-			Usage: "the port that the server should listen on",
-		},
-		cli.StringFlag{
-			Name:  "overlay",
-			Value: "",
-			Usage: "path to an overlay.yaml file",
-		},
-		cli.StringFlag{
-			Name:  "base-path",
-			Value: "",
-			Usage: "override the basePath defined in the spec. defaults to the value defined in the spec.",
-		},
+	if *spec == "" {
+		log.Fatalln("missing positional argument <openapi-spec.yaml>")
 	}
 
-	app.Action = func(context *cli.Context) error {
-		openAPISpec := context.Args().First()
-		host := context.String("host")
-		port := context.Int("port")
-		overlay := context.String("overlay")
-		basePath := context.String("base-path")
-		log.Println(basePath)
-		if openAPISpec == "" {
-			log.Fatalln("missing positional argument <openapi-spec.yaml>")
-		}
-
-		stub, err := core.NewStubGenerator(openAPISpec, core.StubGeneratorOptions{
-			Overlay:  overlay,
-			BasePath: basePath,
-		})
-		if err != nil {
-			log.Fatalln(err)
-		}
-
-		server := server.OpenAPIStubServer(stub, &server.Options{
-			Host: host,
-			Port: port,
-		})
-
-		log.Printf("listening on %v:%v\n", host, port)
-		return server.ListenAndServe()
-	}
-
-	err := app.Run(os.Args)
+	stub, err := core.NewStubGenerator(*spec, core.StubGeneratorOptions{
+		Overlay:  *overlay,
+		BasePath: *basePath,
+	})
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
+
+	server := server.OpenAPIStubServer(stub, &server.Options{
+		Host: *host,
+		Port: *port,
+	})
+
+	log.Printf("listening on %v:%v\n", host, port)
+	log.Fatalln(server.ListenAndServe())
 }
