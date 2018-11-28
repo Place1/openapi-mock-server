@@ -44,7 +44,7 @@ func TestApplyResponseOverlayWithPrimatives(t *testing.T) {
 func TestExpandOperationIDs(t *testing.T) {
 	require := require.New(t)
 
-	document, err := loads.Spec("../petstore.yaml")
+	document, err := loads.Spec("../../petstore.yaml")
 	require.NoError(err)
 
 	ExpandOperationIDs(document)

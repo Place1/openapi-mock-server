@@ -1,7 +1,7 @@
 package main
 
 import (
-	"openapimockserver/core"
+	"openapimockserver/stubserver/core"
 	"testing"
 
 	"github.com/stretchr/testify/require"

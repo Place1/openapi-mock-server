@@ -2,8 +2,8 @@ package main
 
 import (
 	"log"
-	"openapimockserver/core"
-	"openapimockserver/server"
+	"openapimockserver/stubserver/core"
+	"openapimockserver/stubserver/server"
 
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )

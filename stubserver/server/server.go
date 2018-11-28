@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"openapimockserver/core"
+	"openapimockserver/stubserver/core"
 
 	"github.com/pkg/errors"
 )
