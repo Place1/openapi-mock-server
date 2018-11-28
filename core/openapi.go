@@ -62,36 +62,15 @@ func (stub *StubGenerator) StubResponse(path string, method string) (interface{}
 		return nil, errors.Wrap(err, "finding operation from path and method")
 	}
 
-	response, err := stub.FindResponse(operation)
+	response, statusCode, err := stub.FindResponse(operation)
 	if err != nil {
 		return nil, errors.Wrap(err, "finding response for operation")
 	}
 
 	stubbedData := StubSchema(response.Schema)
 
-	for pathOverlay, pathItem := range stub.overlay.Paths {
-		if pathOverlay == path {
-			var operationOverlay *Operation
-			switch method {
-			case "GET":
-				operationOverlay = pathItem.Get
-			case "POST":
-				operationOverlay = pathItem.Post
-			case "PUT":
-				operationOverlay = pathItem.Put
-			case "PATCH":
-				operationOverlay = pathItem.Patch
-			case "OPTIONS":
-				operationOverlay = pathItem.Options
-			case "HEAD":
-				operationOverlay = pathItem.Head
-			}
-			if operationOverlay != nil {
-				// TODO: handle response code correctly. It needs to match the
-				// selected code from FindOperation.
-				ApplyResponseOverlay(operationOverlay.Responses[200], &stubbedData)
-			}
-		}
+	if responseOverlay, err := stub.overlay.FindResponse(path, method, *statusCode); err == nil {
+		ApplyResponseOverlay(*responseOverlay, &stubbedData)
 	}
 
 	return stubbedData, nil
@@ -159,21 +138,22 @@ func pathToRegexp(path string) *regexp.Regexp {
 
 // FindResponse returns either the default response from an operation
 // or the response with the lowest HTTP status code (i.e. success codes over error codes)
-func (stub *StubGenerator) FindResponse(operation *spec.Operation) (*spec.Response, error) {
+func (stub *StubGenerator) FindResponse(operation *spec.Operation) (*spec.Response, *int, error) {
 	var response *spec.Response
 
 	lowestCode := 999
 	for code, res := range operation.Responses.StatusCodeResponses {
 		if code < lowestCode {
 			response = &res
+			lowestCode = code
 		}
 	}
 
 	if response == nil {
-		return nil, fmt.Errorf("no response definition found for operation %s", operation.ID)
+		return nil, nil, fmt.Errorf("no response definition found for operation %s", operation.ID)
 	}
 
-	return response, nil
+	return response, &lowestCode, nil
 }
 
 func FindBodyParam(operation *spec.Operation) (*spec.Parameter, error) {

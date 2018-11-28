@@ -2,6 +2,7 @@ package core
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"reflect"
 
@@ -52,6 +53,34 @@ func LoadOverlayFile(path string) (*Overlay, error) {
 // and overlay file. it's just used inplace of a nil value.
 func EmptyOverlay() Overlay {
 	return Overlay{}
+}
+
+func (overlay *Overlay) FindResponse(path string, method string, statusCode int) (*Response, error) {
+	for pathOverlay, pathItem := range overlay.Paths {
+		if pathOverlay == path {
+			var operationOverlay *Operation
+			switch method {
+			case "GET":
+				operationOverlay = pathItem.Get
+			case "POST":
+				operationOverlay = pathItem.Post
+			case "PUT":
+				operationOverlay = pathItem.Put
+			case "PATCH":
+				operationOverlay = pathItem.Patch
+			case "OPTIONS":
+				operationOverlay = pathItem.Options
+			case "HEAD":
+				operationOverlay = pathItem.Head
+			}
+			if operationOverlay != nil {
+				if response, ok := operationOverlay.Responses[statusCode]; ok {
+					return &response, nil
+				}
+			}
+		}
+	}
+	return nil, fmt.Errorf("response overlay for %v %v %v not found", statusCode, method, path)
 }
 
 // ApplyResponseOverlay expects data to be passed by reference.

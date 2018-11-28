@@ -4,17 +4,56 @@ import (
 	"log"
 	"openapimockserver/core"
 	"openapimockserver/server"
+	"os"
 
-	"github.com/spf13/cobra"
+	"github.com/urfave/cli"
 )
 
-var overlay string
+func main() {
+	app := cli.NewApp()
 
-var rootCmd = &cobra.Command{
-	Use:   "openapi-server-stub",
-	Short: "An automatic server stub powered by OpenAPI and Go",
-	Run: func(cmd *cobra.Command, args []string) {
-		stub, err := core.NewStubGenerator("./petstore.yaml", core.StubGeneratorOptions{
+	app.Description = "An automatic server stub powered by OpenAPI and Go"
+
+	app.Flags = []cli.Flag{
+		cli.StringFlag{
+			Name:  "lang",
+			Value: "english",
+			Usage: "language for the greeting",
+		},
+		cli.StringFlag{
+			Name:  "host",
+			Value: "127.0.0.1",
+			Usage: "the host or ip address that the server should listen on",
+		},
+		cli.IntFlag{
+			Name:  "port",
+			Value: 8000,
+			Usage: "the port that the server should listen on",
+		},
+		cli.StringFlag{
+			Name:  "overlay",
+			Value: "",
+			Usage: "path to an overlay.yaml file",
+		},
+	}
+
+	app.Action = func(context *cli.Context) error {
+		// if c.NArg() > 0 {
+		// 	name = c.Args().Get(0)
+		// }
+		// if c.String("lang") == "spanish" {
+		// 	fmt.Println("Hola", name)
+		// } else {
+		// 	fmt.Println("Hello", name)
+		// }
+		// return nil
+
+		openAPISpec := context.Args().First()
+		host := context.String("host")
+		port := context.Int("port")
+		overlay := context.String("overlay")
+
+		stub, err := core.NewStubGenerator(openAPISpec, core.StubGeneratorOptions{
 			Overlay: &overlay,
 		})
 		if err != nil {
@@ -22,22 +61,16 @@ var rootCmd = &cobra.Command{
 		}
 
 		server := server.OpenAPIStubServer(stub, &server.Options{
-			Host: "127.0.0.1",
-			Port: 8000,
+			Host: host,
+			Port: port,
 		})
 
-		log.Println("listening on :8000")
-		log.Fatalln(server.ListenAndServe())
-	},
-}
+		log.Printf("listening on %v:%v\n", host, port)
+		return server.ListenAndServe()
+	}
 
-func init() {
-	rootCmd.Flags().StringVarP(&overlay, "overlay", "", "", "path to an overlay.yaml file")
-}
-
-func main() {
-	err := rootCmd.Execute()
+	err := app.Run(os.Args)
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatal(err)
 	}
 }
