@@ -1,0 +1,12 @@
+- timestamps need to be legit
+ - i.e. use the “format” key from the spec
+ - https://swagger.io/docs/specification/data-models/data-types/
+- enum should work
+- array length default length (config value)
+- strings should be random per request
+ - perhaps a config value between generate once and per request
+- default format flags
+ - min and max values for ints and floats
+- act as a proxy and record request/responses to overrides.yaml file
+- act as a validation proxy
+ - validate request and responses match the schema

@@ -57,6 +57,12 @@ func arrayStub(schema *spec.Schema) []interface{} {
 }
 
 func stringStub(schema *spec.Schema) interface{} {
+	if len(schema.Enum) != 0 {
+		// if the schema defines an enum we will choose
+		// one of the values at random
+		return schema.Enum[randInt(0, len(schema.Enum)-1)]
+	}
+
 	switch schema.Format {
 	case "date":
 		return time.Now().Format("2006-01-02")
@@ -80,10 +86,13 @@ func numberStub() float32 {
 }
 
 func booleanStub() bool {
-	// Intn is [0, n) non inclusive, so we need n=2 to get [0,1]
-	return rand.Intn(2) == 0
+	return randInt(0, 1) == 0
 }
 
+// randInt returns a random number within the given
+// bounds [min, max] inclusive.
 func randInt(min int, max int) int {
-	return rand.Intn(max-min) + min
+	// rand.Intn is non-inclusive of the upper bound
+	// so we +1 to get an inclusive upper bound
+	return rand.Intn(max-min+1) + min
 }

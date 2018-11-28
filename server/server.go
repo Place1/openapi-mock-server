@@ -24,7 +24,8 @@ type Options struct {
 func OpenAPIStubServer(generator *core.StubGenerator, options *Options) *http.Server {
 
 	handler := createHandler(generator)
-	// handler = validationMiddleware(handler, generator)
+	handler = requestLogger(handler)
+	handler = validationMiddleware(handler, generator)
 
 	server := &http.Server{
 		Addr:    fmt.Sprintf("%v:%v", options.Host, options.Port),
@@ -89,5 +90,19 @@ func validationMiddleware(handler http.Handler, generator *core.StubGenerator) h
 				break
 			}
 		}
+		handler.ServeHTTP(res, req)
+	})
+}
+
+func requestLogger(handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		log.Printf("%v %v", req.Method, req.URL.Path)
+		handler.ServeHTTP(res, req)
+	})
+}
+
+func errorLogger(handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		handler.ServeHTTP(res, req)
 	})
 }

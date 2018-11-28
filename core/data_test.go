@@ -43,3 +43,17 @@ func TestStringStubDate(t *testing.T) {
 		"date-time string should be a ISO8601 date string without time component",
 	)
 }
+
+func TestStringStubEnum(t *testing.T) {
+	require := require.New(t)
+
+	choices := []interface{}{"hello", "world"}
+
+	result := stringStub(&spec.Schema{
+		SchemaProps: spec.SchemaProps{
+			Enum: choices,
+		},
+	})
+
+	require.Subset(choices, []interface{}{result})
+}

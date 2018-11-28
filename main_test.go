@@ -13,7 +13,7 @@ func TestStubResponse(t *testing.T) {
 	stub, err := core.NewStubGenerator("./petstore.yaml", core.StubGeneratorOptions{})
 	require.NoError(err)
 
-	data, err := stub.StubResponse("/pets", "GET")
+	data, err := stub.StubResponse("/v1/pets", "GET")
 	require.NoError(err)
 
 	require.NotNil(data, "data should not be nil")
@@ -22,16 +22,12 @@ func TestStubResponse(t *testing.T) {
 func TestStubResponseWithOverlay(t *testing.T) {
 	require := require.New(t)
 
-	overlayPath := "./overlay.yaml"
 	stub, err := core.NewStubGenerator("./petstore.yaml", core.StubGeneratorOptions{
-		Overlay: &overlayPath,
+		Overlay:  "",
+		BasePath: "/test-base-path",
 	})
 	require.NoError(err)
 
-	data, err := stub.StubResponse("/pets", "GET")
+	_, err = stub.StubResponse("/test-base-path/pets", "GET")
 	require.NoError(err)
-
-	require.IsType([]interface{}{}, data)
-	require.Len(data, 1)
-	require.Contains(data.([]interface{})[0], "surprise")
 }

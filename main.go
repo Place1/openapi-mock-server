@@ -33,6 +33,6 @@ func main() {
 		Port: *port,
 	})
 
-	log.Printf("listening on %v:%v\n", host, port)
+	log.Printf("listening on %v:%v\n", *host, *port)
 	log.Fatalln(server.ListenAndServe())
 }
