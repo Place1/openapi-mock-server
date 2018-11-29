@@ -5,5 +5,9 @@ type Options struct {
 }
 
 func RunSpecLint(options Options) {
+	// document, err := loads.Spec(options.Spec)
+	// if err != nil {
+	// 	log.Fatalln(err)
+	// }
 
 }

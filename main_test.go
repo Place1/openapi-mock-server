@@ -1,7 +1,7 @@
 package main
 
 import (
-	"openapimockserver/stubserver/core"
+	"openapimockserver/stubserver/generator"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -10,7 +10,7 @@ import (
 func TestStubResponse(t *testing.T) {
 	require := require.New(t)
 
-	stub, err := core.NewStubGenerator("./petstore.yaml", core.StubGeneratorOptions{})
+	stub, err := generator.NewStubGenerator("./petstore.yaml", generator.StubGeneratorOptions{})
 	require.NoError(err)
 
 	data, err := stub.StubResponse("/v1/pets", "GET")
@@ -22,7 +22,7 @@ func TestStubResponse(t *testing.T) {
 func TestStubResponseWithOverlay(t *testing.T) {
 	require := require.New(t)
 
-	stub, err := core.NewStubGenerator("./petstore.yaml", core.StubGeneratorOptions{
+	stub, err := generator.NewStubGenerator("./petstore.yaml", generator.StubGeneratorOptions{
 		Overlay:  "",
 		BasePath: "/test-base-path",
 	})

@@ -1,4 +1,4 @@
-package core
+package generator
 
 import (
 	"encoding/json"

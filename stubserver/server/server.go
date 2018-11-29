@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"openapimockserver/stubserver/core"
+	"openapimockserver/stubserver/generator"
 
 	"github.com/pkg/errors"
 )
@@ -18,7 +18,7 @@ type Options struct {
 
 // OpenAPIStubServer returns an http.Server that pretends to be the API
 // defined in the StubGenerator
-func OpenAPIStubServer(generator *core.StubGenerator, options *Options) *http.Server {
+func OpenAPIStubServer(generator *generator.StubGenerator, options *Options) *http.Server {
 
 	handler := createHandler(generator)
 	handler = requestLogger(handler)
@@ -32,7 +32,7 @@ func OpenAPIStubServer(generator *core.StubGenerator, options *Options) *http.Se
 	return server
 }
 
-func createHandler(generator *core.StubGenerator) http.Handler {
+func createHandler(generator *generator.StubGenerator) http.Handler {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		response, err := generator.StubResponse(req.URL.Path, req.Method)
 		if err != nil {
@@ -51,7 +51,7 @@ func createHandler(generator *core.StubGenerator) http.Handler {
 	})
 }
 
-func validationMiddleware(handler http.Handler, generator *core.StubGenerator) http.Handler {
+func validationMiddleware(handler http.Handler, generator *generator.StubGenerator) http.Handler {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		switch req.Method {
 		case "POST", "PUT", "PATCH":

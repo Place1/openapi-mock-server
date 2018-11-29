@@ -1,4 +1,4 @@
-package core
+package generator
 
 func FakeString() string {
 	values := []string{

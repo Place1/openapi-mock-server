@@ -2,7 +2,7 @@ package stubserver
 
 import (
 	"log"
-	"openapimockserver/stubserver/core"
+	"openapimockserver/stubserver/generator"
 	"openapimockserver/stubserver/server"
 )
 
@@ -15,7 +15,7 @@ type Options struct {
 }
 
 func RunStubServer(options Options) {
-	stub, err := core.NewStubGenerator(options.Spec, core.StubGeneratorOptions{
+	stub, err := generator.NewStubGenerator(options.Spec, generator.StubGeneratorOptions{
 		Overlay:  options.Overlay,
 		BasePath: options.BasePath,
 	})
