@@ -21,12 +21,15 @@ require (
 	github.com/imdario/mergo v0.3.6
 	github.com/manveru/faker v0.0.0-20171103152722-9fbc68a78c4d // indirect
 	github.com/pkg/errors v0.8.0
+	github.com/sirupsen/logrus v1.2.0
 	github.com/spf13/cobra v0.0.3 // indirect
 	github.com/spf13/pflag v1.0.3 // indirect
 	github.com/stretchr/testify v1.2.2
 	github.com/urfave/cli v1.20.0 // indirect
 	github.com/zach-klippenstein/goregen v0.0.0-20160303162051-795b5e3961ea // indirect
+	golang.org/x/crypto v0.0.0-20181127143415-eb0de9b17e85 // indirect
 	golang.org/x/net v0.0.0-20181114220301-adae6a3d119a // indirect
+	golang.org/x/sys v0.0.0-20181128092732-4ed8d59d0b35 // indirect
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 	gopkg.in/yaml.v2 v2.2.1
