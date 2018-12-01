@@ -202,14 +202,14 @@ func applyBasePath(prefix string, suffix string) string {
 // a useful name for usage in error/logging.
 func ExpandOperationIDs(document *loads.Document) {
 	currentPathName := ""
-	core.Walk(document, "", func(node interface{}, key string) {
+	core.Walk(document, core.NodeData{}, func(node interface{}, data core.NodeData) {
 		switch v := node.(type) {
 		case *spec.PathItem:
-			currentPathName = key
+			currentPathName = data.Key
 
 		case *spec.Operation:
 			if v.ID == "" {
-				v.ID = fmt.Sprintf("%v: %v", key, currentPathName)
+				v.ID = fmt.Sprintf("%v: %v", data.Key, currentPathName)
 			}
 		}
 	})
