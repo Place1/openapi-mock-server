@@ -4,6 +4,7 @@ import (
 	"openapimockserver/core"
 	"openapimockserver/utils"
 	"path"
+	"strconv"
 	"strings"
 
 	"github.com/go-openapi/spec"
@@ -109,6 +110,43 @@ func PropertyNamingConvention(convention NamingConvention) core.DocumentVisitor 
 						}
 					}
 				})
+			}
+		}
+	}
+}
+
+func ParameterNamingConvention(convention NamingConvention) core.DocumentVisitor {
+	checker := GetNamingChecker(convention)
+	return func(node interface{}, data core.NodeData) {
+		switch node := node.(type) {
+		case *spec.Parameter:
+			if !checker(node.Name) {
+				logrus.Warnf(`property "%v" must follow the %v naming convention`, data.Ref, convention)
+			}
+		}
+	}
+}
+
+func OperationTagNamingConvention(convention NamingConvention) core.DocumentVisitor {
+	checker := GetNamingChecker(convention)
+	return func(node interface{}, data core.NodeData) {
+		switch node := node.(type) {
+		case *spec.Operation:
+			for i, tag := range node.Tags {
+				if !checker(tag) {
+					logrus.Warnf(`operation tag "%v" must follow the %v naming convention`, path.Join(data.Ref, strconv.Itoa(i)), convention)
+				}
+			}
+		}
+	}
+}
+
+func RequireOperationTags() core.DocumentVisitor {
+	return func(node interface{}, data core.NodeData) {
+		switch node := node.(type) {
+		case *spec.Operation:
+			if len(node.Tags) == 0 {
+				logrus.Warnf(`operation "%v" must have at least 1 tag`, data.Ref)
 			}
 		}
 	}
