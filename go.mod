@@ -1,4 +1,4 @@
-module openapimockserver
+module github.com/place1/openapi-mock-server
 
 require (
 	github.com/Pallinder/go-randomdata v1.1.0 // indirect

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"openapimockserver/stubserver"
+	"github.com/place1/openapi-mock-server/mockserver"
 
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
@@ -16,7 +16,7 @@ var (
 
 func main() {
 	kingpin.Parse()
-	stubserver.RunStubServer(stubserver.Options{
+	mockserver.Runmockserver(mockserver.Options{
 		Spec:     *serveSpec,
 		Host:     *serveHost,
 		Port:     *servePort,

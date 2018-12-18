@@ -1,9 +1,10 @@
-package stubserver
+package mockserver
 
 import (
 	"log"
-	"openapimockserver/stubserver/generator"
-	"openapimockserver/stubserver/server"
+
+	"github.com/place1/openapi-mock-server/generator"
+	"github.com/place1/openapi-mock-server/server"
 )
 
 type Options struct {
@@ -14,7 +15,7 @@ type Options struct {
 	Port     int
 }
 
-func RunStubServer(options Options) {
+func Runmockserver(options Options) {
 	stub, err := generator.NewStubGenerator(options.Spec, generator.StubGeneratorOptions{
 		Overlay:  options.Overlay,
 		BasePath: options.BasePath,
@@ -23,7 +24,7 @@ func RunStubServer(options Options) {
 		log.Fatalln(err)
 	}
 
-	server := server.OpenAPIStubServer(stub, &server.Options{
+	server := server.OpenAPIMockServer(stub, &server.Options{
 		Host: options.Host,
 		Port: options.Port,
 	})

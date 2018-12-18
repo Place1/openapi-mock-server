@@ -1,8 +1,9 @@
 package main
 
 import (
-	"openapimockserver/stubserver/generator"
 	"testing"
+
+	"github.com/place1/openapi-mock-server/generator"
 
 	"github.com/stretchr/testify/require"
 )

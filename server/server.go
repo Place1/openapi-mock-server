@@ -5,20 +5,21 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"openapimockserver/stubserver/generator"
+
+	"github.com/place1/openapi-mock-server/generator"
 
 	"github.com/pkg/errors"
 )
 
-// Options for the OpenAPIStubServer
+// Options for the OpenAPIMockServer
 type Options struct {
 	Host string
 	Port int
 }
 
-// OpenAPIStubServer returns an http.Server that pretends to be the API
+// OpenAPIMockServer returns an http.Server that pretends to be the API
 // defined in the StubGenerator
-func OpenAPIStubServer(generator *generator.StubGenerator, options *Options) *http.Server {
+func OpenAPIMockServer(generator *generator.StubGenerator, options *Options) *http.Server {
 
 	handler := createHandler(generator)
 	handler = requestLogger(handler)

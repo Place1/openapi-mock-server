@@ -2,10 +2,11 @@ package generator
 
 import (
 	"fmt"
-	"openapimockserver/core"
 	"path"
 	"regexp"
 	"strings"
+
+	"github.com/place1/openapi-mock-server/core"
 
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
