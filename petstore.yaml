@@ -81,7 +81,7 @@ definitions:
   Pet:
     required:
       - id
-      - name
+      - Name
     properties:
       id:
         type: integer

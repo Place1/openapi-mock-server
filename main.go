@@ -1,7 +1,11 @@
 package main
 
 import (
-	"github.com/place1/openapi-mock-server/mockserver"
+	"log"
+
+	"github.com/place1/openapi-mock-server/server"
+
+	"github.com/place1/openapi-mock-server/generator"
 
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
@@ -16,11 +20,37 @@ var (
 
 func main() {
 	kingpin.Parse()
-	mockserver.Runmockserver(mockserver.Options{
+	Runmockserver(Options{
 		Spec:     *serveSpec,
 		Host:     *serveHost,
 		Port:     *servePort,
 		Overlay:  *serveOverlay,
 		BasePath: *serveBasePath,
 	})
+}
+
+type Options struct {
+	Spec     string
+	Overlay  string
+	BasePath string
+	Host     string
+	Port     int
+}
+
+func Runmockserver(options Options) {
+	stub, err := generator.NewStubGenerator(options.Spec, generator.StubGeneratorOptions{
+		Overlay:  options.Overlay,
+		BasePath: options.BasePath,
+	})
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	server := server.OpenAPIMockServer(stub, &server.Options{
+		Host: options.Host,
+		Port: options.Port,
+	})
+
+	log.Printf("listening on %v:%v\n", options.Host, options.Port)
+	log.Fatalln(server.ListenAndServe())
 }

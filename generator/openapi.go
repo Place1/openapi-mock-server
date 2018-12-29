@@ -6,8 +6,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/place1/openapi-mock-server/core"
-
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
 	"github.com/pkg/errors"
@@ -202,16 +200,27 @@ func applyBasePath(prefix string, suffix string) string {
 // ExpandOperationIDs will expand empty operationId fields into
 // a useful name for usage in error/logging.
 func ExpandOperationIDs(document *loads.Document) {
-	currentPathName := ""
-	core.Walk(document, core.NodeData{}, func(node interface{}, data core.NodeData) {
-		switch v := node.(type) {
-		case *spec.PathItem:
-			currentPathName = data.Key
-
-		case *spec.Operation:
-			if v.ID == "" {
-				v.ID = fmt.Sprintf("%v: %v", data.Key, currentPathName)
-			}
+	for path, pathItem := range document.Spec().Paths.Paths {
+		if op := pathItem.Head; op != nil && op.ID == "" {
+			op.ID = "Head: " + path
 		}
-	})
+		if op := pathItem.Options; op != nil && op.ID == "" {
+			op.ID = "Options: " + path
+		}
+		if op := pathItem.Put; op != nil && op.ID == "" {
+			op.ID = "Put: " + path
+		}
+		if op := pathItem.Get; op != nil && op.ID == "" {
+			op.ID = "Get: " + path
+		}
+		if op := pathItem.Post; op != nil && op.ID == "" {
+			op.ID = "Post: " + path
+		}
+		if op := pathItem.Patch; op != nil && op.ID == "" {
+			op.ID = "Patch: " + path
+		}
+		if op := pathItem.Delete; op != nil && op.ID == "" {
+			op.ID = "Delete: " + path
+		}
+	}
 }
