@@ -77,7 +77,7 @@ func (stub *StubGenerator) StubResponse(path string, method string) (interface{}
 		return nil, errors.Wrap(err, "finding response for operation")
 	}
 
-	stubbedData := StubSchema(response.Schema)
+	stubbedData := StubSchema(*response.Schema)
 
 	if responseOverlay, err := stub.overlay.FindResponse(path, method, *statusCode); err == nil {
 		ApplyResponseOverlay(*responseOverlay, &stubbedData)

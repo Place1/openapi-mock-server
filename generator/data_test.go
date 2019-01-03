@@ -15,7 +15,7 @@ var ISO8601_DATE_STRING_RE = `^\d{4}(-\d\d(-\d\d(T\d\d:\d\d(:\d\d)?(\.\d+)?(([+-
 func TestStringStubDateTime(t *testing.T) {
 	require := require.New(t)
 
-	result := stringStub(&spec.Schema{
+	result := stringStub(spec.Schema{
 		SchemaProps: spec.SchemaProps{
 			Format: "date-time",
 		},
@@ -31,7 +31,7 @@ func TestStringStubDateTime(t *testing.T) {
 func TestStringStubDate(t *testing.T) {
 	require := require.New(t)
 
-	result := stringStub(&spec.Schema{
+	result := stringStub(spec.Schema{
 		SchemaProps: spec.SchemaProps{
 			Format: "date",
 		},
@@ -49,7 +49,7 @@ func TestStringStubEnum(t *testing.T) {
 
 	choices := []interface{}{"hello", "world"}
 
-	result := stringStub(&spec.Schema{
+	result := stringStub(spec.Schema{
 		SchemaProps: spec.SchemaProps{
 			Enum: choices,
 		},
