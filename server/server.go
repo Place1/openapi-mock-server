@@ -22,6 +22,7 @@ type Options struct {
 func OpenAPIMockServer(generator *generator.StubGenerator, options *Options) *http.Server {
 
 	handler := createHandler(generator)
+	handler = cors(handler)
 	handler = requestLogger(handler)
 	handler = validationMiddleware(handler, generator)
 
@@ -85,6 +86,13 @@ func requestLogger(handler http.Handler) http.Handler {
 
 func errorLogger(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		handler.ServeHTTP(res, req)
+	})
+}
+
+func cors(handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		res.Header().Set("Access-Control-Allow-Origin", "*")
 		handler.ServeHTTP(res, req)
 	})
 }
